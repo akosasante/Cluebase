@@ -1,5 +1,5 @@
 # base image
-FROM python:3.7.2-alpine
+FROM python:3.12.3-alpine
 
 # install dependencies
 RUN apk update && \
