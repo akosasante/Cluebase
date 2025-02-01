@@ -6,14 +6,21 @@ while ! nc -z postgres 5432; do
   sleep 0.1
 done
 
-echo "Waiting for redis"
+echo "Postgers started ✅"
+echo "Waiting for redis..."
 
 while ! nc -z redis 6379; do
   sleep 0.1
 done
 
+echo "Redis started ✅"
+
 sleep 3
 
-echo "PostgreSQL started, now running flask service"
+echo "PostgreSQL and Redis started, now running flask service"
+
+python --version
+pip --version
+cat requirements.txt
 
 python run.py run -h 0.0.0.0
