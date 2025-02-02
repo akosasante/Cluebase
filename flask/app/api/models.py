@@ -8,6 +8,7 @@ class Seasons(db.Model):
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
     total_games = db.Column(db.Integer)
+    games = db.relationship('Games', backref='season', lazy=True)
 
     def __repr__(self):
         return f'Season [id = {self.id}, season_name = {self.season_name}' + \
@@ -61,11 +62,8 @@ class Games(db.Model):
     score3 = db.Column(db.Integer)
 
     def __repr__(self):
-        return f'Game [id = {self.id}, episode_num = {episode_num}, ' + \
-                f'season_id = {season_id}, air_date = {air_date}, notes = {notes}, ' + \
-                f'contestant1 = {contestant1}, contestant2 = {contestant2}, ' + \
-                f'contestant3 = {contestant3}, winner = {winner}, score1 = {score1}, ' + \
-                f'score2 = {score2}, score3 = {score3}]'
+        return f'Game [id = {self.id}, episode_num = {self.episode_num}, ' + \
+                f'season_id = {self.season_id}, air_date = {self.air_date}, notes = {self.notes}]'
 
     def to_json(self):
         return {
