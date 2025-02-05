@@ -2,13 +2,13 @@ from flask import Blueprint, request
 from flask_restful import Resource, Api
 
 from app import db, cache
-from app.api.models import Games
+from app.api.models import Games, Clues
 from app.api.exceptions import LimitNotANumberError, LimitOverMaxError, \
                                OffsetNotANumberError, OrderByInvalidError, \
                                SortInvalidError, IdNotFoundError, \
                                NameNotFoundError
 
-games_blueprint = Blueprint('games', __name__)
+games_blueprint = Blueprint('games', __name__, url_prefix='/games')
 api = Api(games_blueprint)
 
 @cache.memoize()
@@ -98,6 +98,29 @@ class GameById(Resource):
             'data': result
         }
 
+class ListCluesForGame(Resource):
+    def get(self, id):
+        try:
+            # First verify the season exists
+            game = Games.query.get(id)
+            if not game:
+                raise IdNotFoundError(f'Game with id {id} could not be found.')
 
-api.add_resource(GamesList, '/games')
-api.add_resource(GameById, '/games/<int:id>')
+            result = [clue.to_json() for clue in game.clues]
+        except Exception as e:
+            return {
+                'status': 'failure',
+                'error': repr(e)
+            }, 400
+
+        return {
+            'status': 'success',
+            'data': result
+        }
+
+
+
+
+api.add_resource(GamesList, '/')
+api.add_resource(GameById, '/<int:id>')
+api.add_resource(ListCluesForGame, '/<int:id>/clues')

@@ -60,6 +60,7 @@ class Games(db.Model):
     score1 = db.Column(db.Integer)
     score2 = db.Column(db.Integer)
     score3 = db.Column(db.Integer)
+    clues = db.relationship('Clues', backref='game', lazy=True)
 
     def __repr__(self):
         return f'Game [id = {self.id}, episode_num = {self.episode_num}, ' + \
