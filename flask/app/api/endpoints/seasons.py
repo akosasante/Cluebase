@@ -6,7 +6,7 @@ from app import db, cache
 from app.api.models import Seasons, Games
 from app.api.exceptions import IdNotFoundError
 
-seasons_blueprint = Blueprint('seasons', __name__)
+seasons_blueprint = Blueprint('seasons', __name__, url_prefix='/seasons')
 api = Api(seasons_blueprint)
 
 class SeasonsList(Resource):
@@ -72,6 +72,6 @@ class SeasonGames(Resource):
                 'error': repr(e)
             }, 400
 
-api.add_resource(SeasonsList, '/seasons')
-api.add_resource(SeasonById, '/seasons/<int:id>')
-api.add_resource(SeasonGames, '/seasons/<int:id>/games')
+api.add_resource(SeasonsList, '/')
+api.add_resource(SeasonById, '/<int:id>')
+api.add_resource(SeasonGames, '/<int:id>/games')
