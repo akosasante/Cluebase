@@ -118,9 +118,28 @@ class ListCluesForGame(Resource):
             'data': result
         }
 
+class GameByDate(Resource):
+    def get(self, date):
+        try:
+            result = [game.to_json() for game in Games.query
+                                                    .filter_by(air_date=date)
+                                                    .all()]
+            if len(result) < 1:
+                raise NameNotFoundError(f'Game with air date {date} does not exist')
+        except Exception as e:
+            return {
+                'status': 'failure',
+                'error': repr(e)
+            }, 400
+
+        return {
+            'status': 'success',
+            'data': result
+        }
 
 
 
 api.add_resource(GamesList, '/')
 api.add_resource(GameById, '/<int:id>')
 api.add_resource(ListCluesForGame, '/<int:id>/clues')
+api.add_resource(GameByDate, '/by_date/<string:date>')
