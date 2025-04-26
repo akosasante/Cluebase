@@ -15,6 +15,7 @@ services:
       - APP_SETTINGS=app.config.DevelopmentConfig
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/jeopardy
       - DATABASE_TEST_URL=postgresql://postgres:postgres@postgres:5432/jeopardy_test
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - postgres
 
@@ -36,3 +37,19 @@ services:
       dockerfile: Dockerfile
     ports:
       - 6379:6379
+
+  rq-worker:
+    build:
+      context: ./flask
+      dockerfile: Dockerfile
+    container_name: rq-worker
+    command: rq worker --url redis://redis:6379/0
+    environment:
+      - RQ_REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/0
+      - FLASK_ENV=development
+      - APP_SETTINGS=app.config.DevelopmentConfig
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/jeopardy
+      - DATABASE_TEST_URL=postgresql://postgres:postgres@postgres:5432/jeopardy_test
+    depends_on:
+      - redis
