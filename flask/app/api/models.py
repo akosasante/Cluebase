@@ -71,6 +71,7 @@ class Games(db.Model):
             'id' : self.id,
             'episode_num' : self.episode_num,
             'season_id' : self.season_id,
+            'season_number': self.season.season_name,
             'air_date' : str(self.air_date),
             'notes' : self.notes,
             'contestant1': self.contestant1,
@@ -92,6 +93,7 @@ class Clues(db.Model):
     category = db.Column(db.String(), nullable=False)
     clue = db.Column(db.String(), nullable=False)
     response = db.Column(db.String(), nullable=False)
+    has_media = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
         return f'Clue [id = {self.id}, game_id = {self.game_id}, ' + \
@@ -108,5 +110,69 @@ class Clues(db.Model):
             'round' : self.round,
             'category' : self.category,
             'clue' : self.clue,
-            'response' : self.response
+            'response' : self.response,
+            'has_media': self.has_media
+        }
+
+class PlayedGames(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.id'), nullable=False)
+    game_date = db.Column(db.DateTime, nullable=False)
+    date_played = db.Column(db.DateTime, default=db.func.now())
+    round1_correct = db.Column(db.Integer, default=0)
+    round1_incorrect = db.Column(db.Integer, default=0)
+    round1_skipped = db.Column(db.Integer, default=0)
+    round2_correct = db.Column(db.Integer, default=0)
+    round2_incorrect = db.Column(db.Integer, default=0)
+    round2_skipped = db.Column(db.Integer, default=0)
+    final_correct = db.Column(db.Boolean, default=False)
+    coryat_score_round1 = db.Column(db.Integer, default=0)
+    coryat_score_round2 = db.Column(db.Integer, default=0)
+    coryat_score_total = db.Column(db.Integer, default=0)
+    completed = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f"PlayedGames [id = {self.id}, game_id = {self.game_id}, " + \
+            f"game_date = {self.game_date}, date_played = {self.date_played}, " + \
+            f"completed = {self.completed}]"
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'game_id': self.game_id,
+            'game_date': str(self.game_date),
+            'date_played': str(self.date_played),
+            'round1_correct': self.round1_correct,
+            'round1_incorrect': self.round1_incorrect,
+            'round1_skipped': self.round1_skipped,
+            'round2_correct': self.round2_correct,
+            'round2_incorrect': self.round2_incorrect,
+            'round2_skipped': self.round2_skipped,
+            'final_correct': self.final_correct,
+            'coryat_score_round1': self.coryat_score_round1,
+            'coryat_score_round2': self.coryat_score_round2,
+            'coryat_score_total': self.coryat_score_total,
+            'completed': self.completed
+        }
+
+class AnsweredClues(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    played_game_id = db.Column(db.Integer, db.ForeignKey('played_games.id'), nullable=False)
+    clue_id = db.Column(db.Integer, db.ForeignKey('clues.id'), nullable=False)
+    answered_correctly = db.Column(db.Boolean, nullable=False)
+    date_answered = db.Column(db.DateTime, default=db.func.now())
+    clue = db.relationship('Clues', lazy=True)
+
+    def __repr__(self):
+        return f"AnsweredClues [id = {self.id}, played_game_id = {self.played_game_id}, " + \
+            f"clue_id = {self.clue_id}, answered_correctly = {self.answered_correctly}, " + \
+            f"date_answered = {self.date_answered}]"
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'played_game_id': self.played_game_id,
+            'clue_id': self.clue_id,
+            'answered_correctly': self.answered_correctly,
+            'date_answered': str(self.date_answered)
         }

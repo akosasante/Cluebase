@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from flask_restful import Resource, Api
 
 from app import db, cache
-from app.api.models import Games, Clues
+from app.api.models import Games
 from app.api.exceptions import LimitNotANumberError, LimitOverMaxError, \
                                OffsetNotANumberError, OrderByInvalidError, \
                                SortInvalidError, IdNotFoundError, \

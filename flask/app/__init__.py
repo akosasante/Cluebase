@@ -5,11 +5,13 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
+from flask_rq2 import RQ
 
 
 # instantiate the db
 db = SQLAlchemy()
 cache = Cache()
+rq = RQ()
 
 
 # create the app (app factory pattern)
@@ -25,6 +27,7 @@ def create_app(script_info=None):
     # set up extensions
     db.init_app(app)
     cache.init_app(app)
+    rq.init_app(app)
 
     # register blueprints
     from app.api.endpoints.util import util_blueprint
@@ -39,10 +42,14 @@ def create_app(script_info=None):
     app.register_blueprint(clues_blueprint)
     from app.api.endpoints.categories import categories_blueprint
     app.register_blueprint(categories_blueprint)
+    from app.api.endpoints.played_games import played_games_blueprint
+    app.register_blueprint(played_games_blueprint)
+    from app.api.endpoints.answered_clues import answered_clues_blueprint
+    app.register_blueprint(answered_clues_blueprint)
 
     # shell context for flask cli
     @app.shell_context_processor
     def ctx():
-        return {'app': app, 'db': db}
+        return {'app': app, 'db': db, 'rq': rq}
 
     return app
