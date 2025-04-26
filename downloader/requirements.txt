@@ -1,0 +1,13 @@
+# HTTP client
+aiohttp>=3.9.1
+
+# Progress bars
+tqdm>=4.66.1
+
+# Database
+asyncpg>=0.29.0
+
+# HTML Parsing
+beautifulsoup4>=4.12.2
+lxml>=5.1.0  # HTML parser for BeautifulSoup
+
