@@ -8,12 +8,14 @@ class BaseConfig:
     CACHE_TYPE = "redis"
     CACHE_DEFAULT_TIMEOUT = 300
     CACHE_REDIS_HOST = "redis"
+    RQ_DASHBOARD_PREFIX = "/rq"
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     DEBUG = True
+    RQ_REDIS_URL = os.environ.get('REDIS_URL')
 
 
 class TestingConfig(BaseConfig):
