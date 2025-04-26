@@ -3,3 +3,8 @@ __pycache__
 docker-compose.yml
 docker-compose-prod.yml
 flask/app/oldinit.py
+/downloader/j-archive/**/*.html
+.idea
+CLAUDE.md
+*.iml
+jeopardy2025*.sql
