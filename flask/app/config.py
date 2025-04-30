@@ -3,6 +3,7 @@ import os
 
 class BaseConfig:
     """Base configuration"""
+    DEBUG = False
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CACHE_TYPE = "redis"
@@ -27,3 +28,5 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    RQ_REDIS_URL = os.environ.get('REDIS_URL')
+

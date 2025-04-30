@@ -6,7 +6,7 @@ while ! nc -z postgres 5432; do
   sleep 0.1
 done
 
-echo "Postgers started ✅"
+echo "Postgres started ✅"
 echo "Waiting for redis..."
 
 while ! nc -z redis 6379; do
