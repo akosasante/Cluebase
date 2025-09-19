@@ -2,14 +2,17 @@
 
 echo "Waiting for postgres..."
 
-while ! nc -z postgres 5432; do
+DATABASE_PORT=${DATABASE_PORT:-5432}
+while ! nc -z postgres $DATABASE_PORT; do
   sleep 0.1
 done
 
 echo "Postgres started ✅"
 echo "Waiting for redis..."
 
-while ! nc -z redis 6379; do
+
+REDIS_PORT=${REDIS_PORT:-6379}
+while ! nc -z redis $REDIS_PORT; do
   sleep 0.1
 done
 

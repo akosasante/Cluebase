@@ -1,6 +1,15 @@
 from flask_sqlalchemy import SQLAlchemy
+from enum import Enum
 
 from app import db
+
+
+class AnswerState(Enum):
+    CORRECT = "correct"
+    INCORRECT = "incorrect"
+    TIMEOUT_BEFORE_BUZZ = "timeout_before_buzz"
+    TIMEOUT_AFTER_BUZZ = "timeout_after_buzz"
+    SKIPPED = "skipped"
 
 class Seasons(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -159,13 +168,18 @@ class AnsweredClues(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     played_game_id = db.Column(db.Integer, db.ForeignKey('played_games.id'), nullable=False)
     clue_id = db.Column(db.Integer, db.ForeignKey('clues.id'), nullable=False)
-    answered_correctly = db.Column(db.Boolean, nullable=False)
+    answered_correctly = db.Column(db.Boolean, nullable=False)  # Keep for backward compatibility
+    answer_state = db.Column(db.Enum(AnswerState), nullable=True)  # New enum field
+    response_text = db.Column(db.String())  # What the player actually said
+    response_time_ms = db.Column(db.Integer())  # Time taken to respond in milliseconds
+    buzz_time_ms = db.Column(db.Integer())  # Time to buzz in milliseconds
     date_answered = db.Column(db.DateTime, default=db.func.now())
     clue = db.relationship('Clues', lazy=True)
 
     def __repr__(self):
         return f"AnsweredClues [id = {self.id}, played_game_id = {self.played_game_id}, " + \
             f"clue_id = {self.clue_id}, answered_correctly = {self.answered_correctly}, " + \
+            f"answer_state = {self.answer_state}, response_text = {self.response_text}, " + \
             f"date_answered = {self.date_answered}]"
 
     def to_json(self):
@@ -174,5 +188,9 @@ class AnsweredClues(db.Model):
             'played_game_id': self.played_game_id,
             'clue_id': self.clue_id,
             'answered_correctly': self.answered_correctly,
+            'answer_state': self.answer_state.value if self.answer_state else None,
+            'response_text': self.response_text,
+            'response_time_ms': self.response_time_ms,
+            'buzz_time_ms': self.buzz_time_ms,
             'date_answered': str(self.date_answered)
         }

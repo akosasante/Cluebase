@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from flask_restful import Resource, Api
 from app import db
-from app.api.models import AnsweredClues
+from app.api.models import AnsweredClues, AnswerState
 from app.api.exceptions import IdNotFoundError
 from app.util import str_to_bool
 
@@ -14,10 +14,11 @@ class AnsweredCluesList(Resource):
     def get(self):
         """
         Endpoint to list all answered clues.
-        Supports optional filters for `played_game_id` and `answered_correctly`.
+        Supports optional filters for `played_game_id`, `answered_correctly`, and `answer_state`.
         """
         played_game_id = request.args.get('played_game_id')
         answered_correctly = request.args.get('answered_correctly')
+        answer_state = request.args.get('answer_state')
 
         try:
             query = AnsweredClues.query
@@ -27,6 +28,17 @@ class AnsweredCluesList(Resource):
 
             if answered_correctly is not None:
                 query = query.filter_by(answered_correctly=str_to_bool(answered_correctly))
+
+            if answer_state:
+                try:
+                    answer_state_enum = AnswerState(answer_state)
+                    query = query.filter_by(answer_state=answer_state_enum)
+                except ValueError:
+                    valid_states = [state.value for state in AnswerState]
+                    return {
+                        'status': 'failure',
+                        'error': f'Invalid answer_state filter. Must be one of: {valid_states}'
+                    }, 400
 
             answered_clues = query.all()
 
@@ -47,19 +59,40 @@ class CreateAnsweredClue(Resource):
         """
         Endpoint to create a new answered clue.
         Validates that the combination of `played_game_id` and `clue_id` is unique.
+        Supports both legacy answered_correctly and new answer_state fields.
         """
         data = request.get_json()
 
-        # Validate input
+        # Validate required input
         played_game_id = data.get('played_game_id')
         clue_id = data.get('clue_id')
         answered_correctly = data.get('answered_correctly')
+        answer_state = data.get('answer_state')
 
-        if not played_game_id or not clue_id or answered_correctly is None:
+        if not played_game_id or not clue_id:
             return {
                 'status': 'failure',
-                'error': 'played_game_id, clue_id, and answered_correctly are required.'
+                'error': 'played_game_id and clue_id are required.'
             }, 400
+
+        # Validate that at least one answer field is provided
+        if answered_correctly is None and not answer_state:
+            return {
+                'status': 'failure',
+                'error': 'Either answered_correctly or answer_state must be provided.'
+            }, 400
+
+        # Validate answer_state if provided
+        answer_state_enum = None
+        if answer_state:
+            try:
+                answer_state_enum = AnswerState(answer_state)
+            except ValueError:
+                valid_states = [state.value for state in AnswerState]
+                return {
+                    'status': 'failure',
+                    'error': f'Invalid answer_state. Must be one of: {valid_states}'
+                }, 400
 
         try:
             # Check for uniqueness
@@ -78,7 +111,11 @@ class CreateAnsweredClue(Resource):
             new_clue = AnsweredClues(
                 played_game_id=int(played_game_id),
                 clue_id=int(clue_id),
-                answered_correctly=str_to_bool(answered_correctly)
+                answered_correctly=str_to_bool(answered_correctly) if answered_correctly is not None else None,
+                answer_state=answer_state_enum,
+                response_text=data.get('response_text'),
+                response_time_ms=data.get('response_time_ms'),
+                buzz_time_ms=data.get('buzz_time_ms')
             )
 
             # Save to the database
