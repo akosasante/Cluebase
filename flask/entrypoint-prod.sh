@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo "Running prod flask app"
 echo "Waiting for postgres..."
 
 DATABASE_PORT=${DATABASE_PORT:-5432}
