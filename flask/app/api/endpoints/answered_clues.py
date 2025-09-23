@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from flask_restful import Resource, Api
 from app import db
 from app.api.models import AnsweredClues, AnswerState
@@ -59,40 +59,35 @@ class CreateAnsweredClue(Resource):
         """
         Endpoint to create a new answered clue.
         Validates that the combination of `played_game_id` and `clue_id` is unique.
-        Supports both legacy answered_correctly and new answer_state fields.
         """
         data = request.get_json()
 
-        # Validate required input
+        # Validate input
         played_game_id = data.get('played_game_id')
         clue_id = data.get('clue_id')
-        answered_correctly = data.get('answered_correctly')
         answer_state = data.get('answer_state')
+        answered_correctly = data.get('answered_correctly')
 
-        if not played_game_id or not clue_id:
+        if not played_game_id or not clue_id or answer_state is None:
             return {
                 'status': 'failure',
-                'error': 'played_game_id and clue_id are required.'
+                'error': 'played_game_id, clue_id, and answer_state are required.'
             }, 400
 
-        # Validate that at least one answer field is provided
-        if answered_correctly is None and not answer_state:
+        try:
+            answer_state_enum = AnswerState(answer_state)
+        except ValueError:
+            valid_states = [state.value for state in AnswerState]
             return {
                 'status': 'failure',
-                'error': 'Either answered_correctly or answer_state must be provided.'
+                'error': f'Invalid answer_state. Must be one of: {valid_states}'
             }, 400
 
-        # Validate answer_state if provided
-        answer_state_enum = None
-        if answer_state:
-            try:
-                answer_state_enum = AnswerState(answer_state)
-            except ValueError:
-                valid_states = [state.value for state in AnswerState]
-                return {
-                    'status': 'failure',
-                    'error': f'Invalid answer_state. Must be one of: {valid_states}'
-                }, 400
+        try:
+            answered_correctly = str_to_bool(answered_correctly)
+            current_app.logger.debug(f"Converted answered_correctly to boolean: {answered_correctly}")
+        except ValueError:
+            answered_correctly = answer_state_enum == AnswerState.CORRECT
 
         try:
             # Check for uniqueness
@@ -111,11 +106,8 @@ class CreateAnsweredClue(Resource):
             new_clue = AnsweredClues(
                 played_game_id=int(played_game_id),
                 clue_id=int(clue_id),
-                answered_correctly=str_to_bool(answered_correctly) if answered_correctly is not None else None,
-                answer_state=answer_state_enum,
-                response_text=data.get('response_text'),
-                response_time_ms=data.get('response_time_ms'),
-                buzz_time_ms=data.get('buzz_time_ms')
+                answered_correctly=answered_correctly,
+                answer_state=answer_state_enum
             )
 
             # Save to the database
