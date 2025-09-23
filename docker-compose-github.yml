@@ -36,7 +36,7 @@ services:
       context: ./redis
       dockerfile: Dockerfile
     ports:
-      - 6379:6379
+      - 6378:6379
 
   rq-worker:
     build:
