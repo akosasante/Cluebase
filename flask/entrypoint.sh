@@ -26,4 +26,5 @@ python --version
 pip --version
 cat requirements.txt
 
+export FLASK_RUN_RELOAD_ENGINE=watchdog
 python run.py run -h 0.0.0.0 --debug --reload
