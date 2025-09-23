@@ -26,4 +26,4 @@ python --version
 pip --version
 cat requirements.txt
 
-python run.py run -h 0.0.0.0
+python run.py run -h 0.0.0.0 --debug --reload
