@@ -169,7 +169,7 @@ class AnsweredClues(db.Model):
     played_game_id = db.Column(db.Integer, db.ForeignKey('played_games.id'), nullable=False)
     clue_id = db.Column(db.Integer, db.ForeignKey('clues.id'), nullable=False)
     answered_correctly = db.Column(db.Boolean, nullable=False)
-    answer_state = db.Column(db.Enum(AnswerState), nullable=False)
+    answer_state = db.Column(db.Enum(AnswerState, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     # The below fields have been added in a migration but are not being used yet
     # response_text = db.Column(db.String())  # What the player actually said
     # response_time_ms = db.Column(db.Integer())  # Time taken to respond in milliseconds
