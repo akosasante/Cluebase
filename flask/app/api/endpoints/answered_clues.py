@@ -53,8 +53,6 @@ class AnsweredCluesList(Resource):
                 'error': repr(e)
             }, 500
 
-
-class CreateAnsweredClue(Resource):
     def post(self):
         """
         Endpoint to create a new answered clue.
@@ -127,5 +125,4 @@ class CreateAnsweredClue(Resource):
 
 
 # Register resources with the API
-api.add_resource(AnsweredCluesList, '/')
-api.add_resource(CreateAnsweredClue, '/')
+api.add_resource(AnsweredCluesResource, '/')
