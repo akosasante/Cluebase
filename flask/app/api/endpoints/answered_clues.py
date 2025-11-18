@@ -1,5 +1,6 @@
 from flask import Blueprint, request, current_app
 from flask_restful import Resource, Api
+from sqlalchemy.orm import joinedload
 from app import db
 from app.api.models import AnsweredClues, AnswerState
 from app.api.exceptions import IdNotFoundError
@@ -21,7 +22,7 @@ class AnsweredCluesList(Resource):
         answer_state = request.args.get('answer_state')
 
         try:
-            query = AnsweredClues.query
+            query = AnsweredClues.query.options(joinedload(AnsweredClues.clue))
 
             if played_game_id:
                 query = query.filter_by(played_game_id=played_game_id)
@@ -125,4 +126,4 @@ class AnsweredCluesList(Resource):
 
 
 # Register resources with the API
-api.add_resource(AnsweredCluesResource, '/')
+api.add_resource(AnsweredCluesList, '/')

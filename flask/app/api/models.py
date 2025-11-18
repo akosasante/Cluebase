@@ -190,4 +190,5 @@ class AnsweredClues(db.Model):
             'answered_correctly': self.answered_correctly,
             'date_answered': str(self.date_answered),
             'answer_state': self.answer_state.value if self.answer_state else None,
+            'clue': self.clue.to_json() if self.clue else None,
         }

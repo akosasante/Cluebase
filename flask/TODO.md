@@ -28,3 +28,7 @@ fix contestants unique constraint (should be by name + jarchive id)
 fix contestants games_played? idk if I should set it back to non-nullable or not...
 potentially don't need pased_games episode_num uniqueness either
 fix old archived games by hand at some point
+
+
+elixir
+- minus points if they buzz in and wait too long  

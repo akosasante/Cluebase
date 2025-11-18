@@ -1,5 +1,5 @@
 from app import db
-from app.api.models import PlayedGames, AnsweredClues, Clues
+from app.api.models import PlayedGames, AnsweredClues, Clues, AnswerState
 from app import rq, create_app
 
 @rq.job
@@ -19,12 +19,18 @@ def calculate_scores(played_game_id):
         def filter_clues(round_name, condition):
             return [clue for clue in answered_clues if clue.clue.round == round_name and condition(clue)]
 
-        round1_correct = filter_clues('J!', lambda clue: clue.answered_correctly)
-        round1_incorrect = filter_clues('J!', lambda clue: not clue.answered_correctly)
-        round1_skipped = filter_clues('J!', lambda clue: clue.answered_correctly is None)
-        round2_correct = filter_clues('DJ!', lambda clue: clue.answered_correctly)
-        round2_incorrect = filter_clues('DJ!', lambda clue: not clue.answered_correctly)
-        round2_skipped = filter_clues('DJ!', lambda clue: clue.answered_correctly is None)
+        # Use answer_state enum for accurate categorization
+        # CORRECT answers
+        round1_correct = filter_clues('J!', lambda clue: clue.answer_state == AnswerState.CORRECT)
+        round2_correct = filter_clues('DJ!', lambda clue: clue.answer_state == AnswerState.CORRECT)
+        
+        # INCORRECT for Coryat: only INCORRECT and TIMEOUT_AFTER_BUZZ (not TIMEOUT_BEFORE_BUZZ)
+        round1_incorrect = filter_clues('J!', lambda clue: clue.answer_state in [AnswerState.INCORRECT, AnswerState.TIMEOUT_AFTER_BUZZ])
+        round2_incorrect = filter_clues('DJ!', lambda clue: clue.answer_state in [AnswerState.INCORRECT, AnswerState.TIMEOUT_AFTER_BUZZ])
+        
+        # SKIPPED: TIMEOUT_BEFORE_BUZZ and SKIPPED (do not affect Coryat score)
+        round1_skipped = filter_clues('J!', lambda clue: clue.answer_state in [AnswerState.TIMEOUT_BEFORE_BUZZ, AnswerState.SKIPPED])
+        round2_skipped = filter_clues('DJ!', lambda clue: clue.answer_state in [AnswerState.TIMEOUT_BEFORE_BUZZ, AnswerState.SKIPPED])
 
         def calculate_coryat_score(correct_clues, incorrect_clues):
             return sum(clue.clue.value for clue in correct_clues) - sum(clue.clue.value for clue in incorrect_clues if not clue.clue.daily_double)
