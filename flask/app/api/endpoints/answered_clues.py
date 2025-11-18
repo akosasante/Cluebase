@@ -11,7 +11,7 @@ answered_clues_blueprint = Blueprint('answered_clues', __name__, url_prefix='/an
 api = Api(answered_clues_blueprint)
 
 
-class AnsweredCluesList(Resource):
+class AnsweredCluesResource(Resource):
     def get(self):
         """
         Endpoint to list all answered clues.
@@ -126,4 +126,4 @@ class AnsweredCluesList(Resource):
 
 
 # Register resources with the API
-api.add_resource(AnsweredCluesList, '/')
+api.add_resource(AnsweredCluesResource, '/')
