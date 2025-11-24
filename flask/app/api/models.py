@@ -170,10 +170,13 @@ class AnsweredClues(db.Model):
     clue_id = db.Column(db.Integer, db.ForeignKey('clues.id'), nullable=False)
     answered_correctly = db.Column(db.Boolean, nullable=False)
     answer_state = db.Column(db.Enum(AnswerState, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
-    # The below fields have been added in a migration but are not being used yet
+    # Buzzer metrics (Phase 2 implementation)
+    buzz_time_ms = db.Column(db.Integer, nullable=True)  # Time to buzz in milliseconds
+    penalties = db.Column(db.Integer, nullable=False, default=0)  # Number of early buzz penalties
+    penalty_time_ms = db.Column(db.Integer, nullable=False, default=0)  # Total penalty duration in ms
+    # Response tracking fields (not yet used)
     # response_text = db.Column(db.String())  # What the player actually said
     # response_time_ms = db.Column(db.Integer())  # Time taken to respond in milliseconds
-    # buzz_time_ms = db.Column(db.Integer())  # Time to buzz in milliseconds
     date_answered = db.Column(db.DateTime, default=db.func.now())
     clue = db.relationship('Clues', lazy=True)
 
@@ -190,5 +193,8 @@ class AnsweredClues(db.Model):
             'answered_correctly': self.answered_correctly,
             'date_answered': str(self.date_answered),
             'answer_state': self.answer_state.value if self.answer_state else None,
+            'buzz_time_ms': self.buzz_time_ms,
+            'penalties': self.penalties,
+            'penalty_time_ms': self.penalty_time_ms,
             'clue': self.clue.to_json() if self.clue else None,
         }
